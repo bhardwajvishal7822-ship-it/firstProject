@@ -20,8 +20,8 @@ pipeline {
 
         stage('Deploy New Container') {
             steps {
-                echo 'Deploying new container on port 8085...'
-                sh 'docker run -d -p 8085:80 --name my-running-site my-html-app'
+                echo 'Deploying new container on port 8083...'
+                sh 'docker run -d -p 8083:80 --name my-running-site my-html-app'
             }
         }
     }
