@@ -20,10 +20,21 @@ pipeline {
         // 🌟 NAYA STAGE: SonarQube Code Quality Check
         stage('SonarQube Analysis') {
             steps {
-                echo '🔍 Running SonarQube Code Analysis...'
-                
-                // Humne isko simple kar diya aur directly Docker se scan maar rahe hain
-                sh 'docker run --rm -v "$(pwd)":/usr/src sonarsource/sonar-scanner-cli'
+                // Yeh block automatic aapke Jenkins credentials se token nikalega
+                withSonarQubeEnv('SonarQube') {
+                    echo '🔍 Running SonarQube Code Analysis...'
+                    
+                    // FIXED: 
+                    // 1. -e SONAR_TOKEN=$SONAR_AUTH_TOKEN se token container ke andar pass hoga (401 Fix)
+                    // 2. -v "$(pwd)"/.scannerwork:/usr/src/.scannerwork se raseed Jenkins ko mil jayegi (Warning Fix)
+                    sh '''
+                        docker run --rm \
+                        -v "$(pwd)":/usr/src \
+                        -v "$(pwd)"/.scannerwork:/usr/src/.scannerwork \
+                        -e SONAR_TOKEN=$SONAR_AUTH_TOKEN \
+                        sonarsource/sonar-scanner-cli
+                    '''
+                }
             }
         }
 
