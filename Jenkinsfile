@@ -1,32 +1,3 @@
-// pipeline {
-//     agent any
-
-//     stages {
-//         stage('Stop Old Container') {
-//             steps {
-//                 echo 'Stopping and removing old container if exists...'
-//                 sh 'docker stop my-running-site || true'
-//                 sh 'docker rm my-running-site || true'
-//             }
-//         }
-
-//         stage('Build Docker Image') {
-//             steps {
-//                 echo 'Building new Docker image from GitHub code...'
-//                 // Ab 'dir' ki zaroorat nahi hai, Jenkins khud GitHub repository ke andar hi khulega
-//                 sh 'docker build -t my-html-app .'
-//             }
-//         }
-
-//         stage('Deploy New Container') {
-//             steps {
-//                 echo 'Deploying new container on port 8083...'
-//                 sh 'docker run -d -p 8083:80 --name my-running-site my-html-app'
-//             }
-//         }
-//     }
-// }
-
 pipeline {
     agent any
 
@@ -46,10 +17,22 @@ pipeline {
             }
         }
 
+        // 🌟 NAYA STAGE: SonarQube Code Quality Check
+        stage('SonarQube Analysis') {
+            steps {
+                // 'SonarQube' wahi naam hai jo humne Manage Jenkins -> System mein dala tha
+                withSonarQubeEnv('SonarQube') {
+                    echo '🔍 Running SonarQube Code Analysis...'
+                    
+                    // Yeh command Docker ke zariye SonarQube Scanner chala degi
+                    sh 'docker run --rm -v "$(pwd)":/usr/src sonarsource/sonar-scanner-cli'
+                }
+            }
+        }
+
         stage('Deploy New Container') {
             steps {
                 echo 'Deploying new container on port 8083...'
-                // FIXED: Space aur port mapping (:80) sahi kar di hai
                 sh 'docker run -d -p 8083:80 --name my-running-site my-html-app'
                 echo 'Waiting for 3 seconds to let the server start...'
                 sh 'sleep 3' 
@@ -58,23 +41,22 @@ pipeline {
 
         stage('Automated Java Test') {
             steps {
-                echo '🧪 Compiling and Running Java Integration Tests...'
-                // 1. Java file ko compile karna
-                sh 'javac WebpageTest.java'
-                // 2. Class file ko run karna (Yeh hamari index.html ka content check karega)
-                sh 'java WebpageTest'
+                echo '🧪 Compiling and Running Java Integration Tests inside Docker...'
+                
+                // Docker container ke andar hi Java compile aur run hoga (Safe Tarika)
+                sh 'docker run --rm --network=host -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp openjdk:17 javac WebpageTest.java'
+                sh 'docker run --rm --network=host -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp openjdk:17 java WebpageTest'
             }
         }
     }
 
     post {
         failure {
-            echo '🚨 TEST FAIL HO GAYA! Bad code detected. Stopping the container immediately...'
-            // Agar Java test fail hua, toh yeh block chalega aur website ko band kar dega
+            echo '🚨 TEST YA ANALYSIS FAIL HO GAYA! Bad code detected. Stopping the container immediately...'
             sh 'docker stop my-running-site || true'
         }
         success {
-            echo '🚀 SAARE TESTS PASS! Website is live and verified by Java.'
+            echo '🚀 SAARE TESTS PASS & CODE SCANNED! Website is live and verified.'
         }
     }
 }
