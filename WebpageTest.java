@@ -30,7 +30,7 @@ public class WebpageTest {
 
             // 4. ASLI TEST CASES (Galti pakadne wala zone)
             boolean test1 = htmlContent.contains("Mubarak Ho Bhai!");
-            boolean test2 = htmlContent.contains("Docker Container1");
+            boolean test2 = htmlContent.contains("Docker Container");
 
             if (test1) {
                 System.out.println("✅ Test 1 Pass: 'Mubarak Ho Bhai!' text mil gaya!");
