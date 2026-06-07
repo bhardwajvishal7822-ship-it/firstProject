@@ -51,9 +51,9 @@ pipeline {
             steps {
                 echo '🧪 Compiling and Running Java Integration Tests inside Docker...'
                 
-                // Docker container ke andar hi Java compile aur run hoga (Safe Tarika)
-                sh 'docker run --rm --network=host -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp openjdk:17 javac WebpageTest.java'
-                sh 'docker run --rm --network=host -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp openjdk:17 java WebpageTest'
+                // FIXED: openjdk:17 ko badalkar eclipse-temurin:17 kar diya hai
+                sh 'docker run --rm --network=host -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp eclipse-temurin:17 javac WebpageTest.java'
+                sh 'docker run --rm --network=host -v "$(pwd)":/usr/src/myapp -w /usr/src/myapp eclipse-temurin:17 java WebpageTest'
             }
         }
     }
