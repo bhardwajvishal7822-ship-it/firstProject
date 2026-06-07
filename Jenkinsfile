@@ -20,12 +20,10 @@ pipeline {
         // 🌟 NAYA STAGE: SonarQube Code Quality Check
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    echo '🔍 Running SonarQube Code Analysis...'
-                    
-                    // FIXED: Token ko environment variable se uthakar Docker container ke andar pass kiya hai
-                    sh 'docker run --rm -v "$(pwd)":/usr/src sonarsource/sonar-scanner-cli -Dsonar.token=$SONAR_AUTH_TOKEN'
-                }
+                echo '🔍 Running SonarQube Code Analysis...'
+                
+                // Humne isko simple kar diya aur directly Docker se scan maar rahe hain
+                sh 'docker run --rm -v "$(pwd)":/usr/src sonarsource/sonar-scanner-cli'
             }
         }
 
