@@ -20,12 +20,11 @@ pipeline {
         // 🌟 NAYA STAGE: SonarQube Code Quality Check
         stage('SonarQube Analysis') {
             steps {
-                // 'SonarQube' wahi naam hai jo humne Manage Jenkins -> System mein dala tha
                 withSonarQubeEnv('SonarQube') {
                     echo '🔍 Running SonarQube Code Analysis...'
                     
-                    // Yeh command Docker ke zariye SonarQube Scanner chala degi
-                    sh 'docker run --rm -v "$(pwd)":/usr/src sonarsource/sonar-scanner-cli'
+                    // FIXED: Token ko environment variable se uthakar Docker container ke andar pass kiya hai
+                    sh 'docker run --rm -v "$(pwd)":/usr/src sonarsource/sonar-scanner-cli -Dsonar.token=$SONAR_AUTH_TOKEN'
                 }
             }
         }
